@@ -1,13 +1,8 @@
 .app {
   max-width: 800px;
-  width: 100%;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
 }
 
 .app-header {
@@ -100,6 +95,9 @@
   cursor: crosshair;
   touch-action: none;
   background-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .canvas-clear-button {
