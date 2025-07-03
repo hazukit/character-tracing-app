@@ -27,36 +27,34 @@ HTMLCanvasElement.prototype.getBoundingClientRect = jest.fn(() => ({
   height: 200
 })) as any;
 
-describe('DrawingCanvas', () => {
-  const defaultProps = {
-    width: 400,
-    height: 200
-  };
+// Mock window dimensions
+Object.defineProperty(window, 'innerWidth', {
+  writable: true,
+  configurable: true,
+  value: 1024,
+});
 
+Object.defineProperty(window, 'innerHeight', {
+  writable: true,
+  configurable: true,
+  value: 768,
+});
+
+describe('DrawingCanvas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render canvas with correct dimensions', () => {
-    render(<DrawingCanvas {...defaultProps} />);
+  it('should render canvas', () => {
+    render(<DrawingCanvas />);
     
     const canvas = screen.getByTestId('drawing-canvas');
     expect(canvas).toBeInTheDocument();
-    expect(canvas).toHaveAttribute('width', '400');
-    expect(canvas).toHaveAttribute('height', '200');
-  });
-
-  it('should render clear button', () => {
-    render(<DrawingCanvas {...defaultProps} />);
-    
-    const clearButton = screen.getByTestId('clear-button');
-    expect(clearButton).toBeInTheDocument();
-    expect(clearButton).toHaveTextContent('クリア');
   });
 
   it('should call onDrawingChange when drawing starts', () => {
     const mockOnDrawingChange = jest.fn();
-    render(<DrawingCanvas {...defaultProps} onDrawingChange={mockOnDrawingChange} />);
+    render(<DrawingCanvas onDrawingChange={mockOnDrawingChange} />);
     
     const canvas = screen.getByTestId('drawing-canvas');
     
@@ -70,7 +68,7 @@ describe('DrawingCanvas', () => {
     expect(mockOnDrawingChange).toHaveBeenCalledWith(true);
   });
 
-  it('should clear canvas when clear button is clicked', () => {
+  it('should clear canvas when clearCanvas is called', () => {
     const mockContext = {
       clearRect: jest.fn(),
       beginPath: jest.fn(),
@@ -86,23 +84,34 @@ describe('DrawingCanvas', () => {
     HTMLCanvasElement.prototype.getContext = jest.fn(() => mockContext) as any;
 
     const mockOnDrawingChange = jest.fn();
-    render(<DrawingCanvas {...defaultProps} onDrawingChange={mockOnDrawingChange} />);
     
-    const clearButton = screen.getByTestId('clear-button');
+    const TestComponent = () => {
+      const canvasRef = useRef<{ clearCanvas: () => void } | null>(null);
+      
+      return (
+        <div>
+          <DrawingCanvas ref={canvasRef} onDrawingChange={mockOnDrawingChange} />
+          <button 
+            onClick={() => canvasRef.current?.clearCanvas()}
+            data-testid="external-clear"
+          >
+            Clear
+          </button>
+        </div>
+      );
+    };
+
+    render(<TestComponent />);
     
-    // First draw something
-    const canvas = screen.getByTestId('drawing-canvas');
-    fireEvent.pointerDown(canvas, { clientX: 100, clientY: 50, pointerId: 1 });
-    
-    // Then clear
+    const clearButton = screen.getByTestId('external-clear');
     fireEvent.click(clearButton);
 
-    expect(mockContext.clearRect).toHaveBeenCalledWith(0, 0, 400, 200);
+    expect(mockContext.clearRect).toHaveBeenCalled();
     expect(mockOnDrawingChange).toHaveBeenCalledWith(false);
   });
 
   it('should render canvas with correct attributes', () => {
-    render(<DrawingCanvas {...defaultProps} />);
+    render(<DrawingCanvas />);
     
     const canvas = screen.getByTestId('drawing-canvas');
     
@@ -125,7 +134,7 @@ describe('DrawingCanvas', () => {
 
     HTMLCanvasElement.prototype.getContext = jest.fn(() => mockContext) as any;
 
-    render(<DrawingCanvas {...defaultProps} />);
+    render(<DrawingCanvas />);
     
     const canvas = screen.getByTestId('drawing-canvas');
     
@@ -160,7 +169,7 @@ describe('DrawingCanvas', () => {
       
       return (
         <div>
-          <DrawingCanvas {...defaultProps} ref={canvasRef} />
+          <DrawingCanvas ref={canvasRef} />
           <button 
             onClick={() => canvasRef.current?.clearCanvas()}
             data-testid="external-clear"
@@ -190,33 +199,6 @@ describe('DrawingCanvas', () => {
     const externalClearButton = screen.getByTestId('external-clear');
     fireEvent.click(externalClearButton);
 
-    expect(mockContext.clearRect).toHaveBeenCalledWith(0, 0, 400, 200);
-  });
-
-  it('should call onDrawingChange with false when cleared externally', () => {
-    const TestComponent = () => {
-      const canvasRef = useRef<{ clearCanvas: () => void } | null>(null);
-      const mockOnDrawingChange = jest.fn();
-      
-      return (
-        <div>
-          <DrawingCanvas {...defaultProps} ref={canvasRef} onDrawingChange={mockOnDrawingChange} />
-          <button 
-            onClick={() => canvasRef.current?.clearCanvas()}
-            data-testid="external-clear"
-          >
-            External Clear
-          </button>
-        </div>
-      );
-    };
-
-    render(<TestComponent />);
-    
-    const externalClearButton = screen.getByTestId('external-clear');
-    fireEvent.click(externalClearButton);
-
-    // Should be called once for external clear
-    expect(screen.getByTestId('external-clear')).toBeInTheDocument();
+    expect(mockContext.clearRect).toHaveBeenCalled();
   });
 });

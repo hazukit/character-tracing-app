@@ -60,9 +60,9 @@ const fetchPokemon = async (id: number): Promise<Character> => {
     }
     const data: PokemonApiResponse = await response.json();
     
-    // 画像URLの取得（優先順位: front_default > official-artwork > エラー）
-    const sprite = data.sprites.front_default || 
-                   data.sprites.other?.['official-artwork']?.front_default;
+    // 画像URLの取得（優先順位: official-artwork > front_default > エラー）
+    const sprite = data.sprites.other?.['official-artwork']?.front_default ||
+                   data.sprites.front_default;
     
     if (!sprite) {
       throw new Error(`ポケモンID ${id} の画像が見つかりません`);
@@ -110,11 +110,11 @@ export const pokemonDataSource: DataSource = {
     return fetchPokemon(pokemonId);
   },
   getAllCharacters: () => {
-    // 同期的な実装として、事前定義されたポケモンリストを返す
+    // 同期的な実装として、事前定義されたポケモンリストを返す（高解像度画像を使用）
     return POKEMON_IDS.map(id => ({
       id: `pokemon-${id}`,
       name: JAPANESE_NAMES[id] || `Pokemon ${id}`,
-      image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+      image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`,
       source: 'pokemon'
     }));
   }
