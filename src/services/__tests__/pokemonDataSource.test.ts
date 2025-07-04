@@ -17,14 +17,14 @@ describe('Pokemon Data Source', () => {
 
   describe('getRandomCharacter', () => {
     it('should return Pokemon character with correct structure', async () => {
-      // Mock Math.random to select ID 52 (ニャース) - index 4 in POKEMON_IDS array
-      Math.random = jest.fn(() => 0.5); // 0.5 * 9 = 4.5 -> floor(4.5) = 4 -> POKEMON_IDS[4] = 52
+      // Mock Math.random to select a known Pokemon ID
+      Math.random = jest.fn(() => 0.0);
     
       const mockPokemonData = {
-        id: 52,
-        name: 'meowth',
+        id: 658,
+        name: 'greninja',
         sprites: {
-          front_default: 'https://example.com/meowth.png'
+          front_default: 'https://example.com/greninja.png'
         }
       };
 
@@ -36,25 +36,25 @@ describe('Pokemon Data Source', () => {
       const result = await pokemonDataSource.getRandomCharacter();
 
       expect(result).toEqual({
-        id: 'pokemon-52',
-        name: 'ニャース',
-        image: 'https://example.com/meowth.png',
+        id: 'pokemon-658',
+        name: 'ゲッコウガ',
+        image: 'https://example.com/greninja.png',
         source: 'pokemon'
       });
     });
 
     it('should use official artwork if front_default is not available', async () => {
-      // Mock Math.random to select ID 1 (フシギダネ) - index 0 in POKEMON_IDS array
-      Math.random = jest.fn(() => 0.05); // 0.05 * 9 = 0.45 -> floor(0.45) = 0 -> POKEMON_IDS[0] = 1
+      // Mock Math.random to select first Pokemon ID (658)
+      Math.random = jest.fn(() => 0.0);
       
       const mockPokemonData = {
-        id: 1,
-        name: 'bulbasaur',
+        id: 658,
+        name: 'greninja',
         sprites: {
           front_default: null,
           other: {
             'official-artwork': {
-              front_default: 'https://example.com/bulbasaur-artwork.png'
+              front_default: 'https://example.com/greninja-artwork.png'
             }
           }
         }
@@ -67,8 +67,8 @@ describe('Pokemon Data Source', () => {
 
       const result = await pokemonDataSource.getRandomCharacter();
 
-      expect(result.image).toBe('https://example.com/bulbasaur-artwork.png');
-      expect(result.name).toBe('フシギダネ');
+      expect(result.image).toBe('https://example.com/greninja-artwork.png');
+      expect(result.name).toBe('ゲッコウガ');
     });
 
     it('should handle API errors properly', async () => {
@@ -110,7 +110,7 @@ describe('Pokemon Data Source', () => {
 
       expect(names).toContain('ピカチュウ');
       expect(names).toContain('フシギダネ');
-      expect(names).toContain('ヒトカゲ');
+      expect(names).toContain('リザードン');
     });
   });
 
